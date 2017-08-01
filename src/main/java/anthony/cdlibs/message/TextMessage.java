@@ -1,4 +1,4 @@
-package com.cdlibs.message;
+package anthony.cdlibs.message;
 
 /**
  * Created by Anthony on 2017/8/1.

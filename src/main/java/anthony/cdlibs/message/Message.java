@@ -1,4 +1,4 @@
-package com.cdlibs.message;
+package anthony.cdlibs.message;
 
 import java.util.HashMap;
 import java.util.Map;

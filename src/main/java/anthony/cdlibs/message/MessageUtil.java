@@ -1,4 +1,4 @@
-package com.cdlibs.message;
+package anthony.cdlibs.message;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;
