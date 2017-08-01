@@ -20,6 +20,7 @@ public class MessageUtil {
 
         //获取消息头的byte数组
         StringBuilder sb = new StringBuilder();
+
         message.getHeaders().forEach((k, v) -> sb.append(k).append(":").append(v).append("\n"));
         byte[] headerBytes = sb.toString().getBytes(MESSAGE_CHARSET);
 
