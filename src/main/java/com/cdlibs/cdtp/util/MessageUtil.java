@@ -10,12 +10,14 @@ import java.util.Map;
  * Created by chend on 2017/8/1.
  */
 public class MessageUtil {
-    private static final int MESSAGE_LENGTH = 4;
-    private static final int HEADER_LENGTH = 4;
+    private static final int BODY_BLOCK_LENGTH = 4;
+    private static final int HEADER_BLOCK_LENGTH = 4;
+    private static final int TOTAL_FIXED_LENGTH = BODY_BLOCK_LENGTH + HEADER_BLOCK_LENGTH;
 
-    public static final Charset MESSAGE_CHARSET = Charset.forName("UTF-8");
+    public static final Charset MESSAGE_CHARSET = Charset.forName("UNICODE");
 
-    //encode
+    //消息转换为byte
+    @SuppressWarnings("unchecked")
     public static byte[] encode(Message message) {
 
         //获取消息头的byte数组
@@ -28,28 +30,30 @@ public class MessageUtil {
         int bodyLength = bodyBytes == null ? 0 : bodyBytes.length;
 
         //创建消息byte数组
-        byte[] messageBytes = new byte[headerBytes.length + bodyLength + MESSAGE_LENGTH + HEADER_LENGTH];
+        byte[] messageBytes = new byte[headerBytes.length + bodyLength + TOTAL_FIXED_LENGTH];
 
-        //消息整体长度
-        System.arraycopy(intToByteArray(messageBytes.length), 0, messageBytes, 0, MESSAGE_LENGTH);
+
         //消息头部长度
-        System.arraycopy(intToByteArray(headerBytes.length), 0, messageBytes, MESSAGE_LENGTH, HEADER_LENGTH);
+        System.arraycopy(intToByteArray(headerBytes.length), 0, messageBytes, 0, HEADER_BLOCK_LENGTH);
+        //消息头部实体
+        System.arraycopy(headerBytes, 0, messageBytes, TOTAL_FIXED_LENGTH, headerBytes.length);
+        //消息体长度
+        System.arraycopy(intToByteArray(bodyLength), 0, messageBytes, HEADER_BLOCK_LENGTH, BODY_BLOCK_LENGTH);
 
-        System.arraycopy(headerBytes, 0, messageBytes, MESSAGE_LENGTH + HEADER_LENGTH, headerBytes.length);
         if (bodyBytes != null)
-            System.arraycopy(bodyBytes, 0, messageBytes, MESSAGE_LENGTH + HEADER_LENGTH + headerBytes.length, bodyLength);
+            System.arraycopy(bodyBytes, 0, messageBytes, TOTAL_FIXED_LENGTH + headerBytes.length, bodyLength);
 
         return messageBytes;
     }
 
-    //decode
-    public static Message decode(byte[] messageBytes) {
-        int messageLength = byteArrayToInt(messageBytes);
-        int headerLength = byteArrayToInt(messageBytes, MESSAGE_LENGTH);
-        int bodyLength = messageLength - headerLength;
+    //byte转换为消息
+    @SuppressWarnings("unchecked")
+    public static <T> T decode(byte[] messageBytes) {
+        int headerLength = byteArrayToInt(messageBytes);
+        int bodyLength = byteArrayToInt(messageBytes, HEADER_BLOCK_LENGTH);
 
         byte[] headerBytes = new byte[headerLength];
-        System.arraycopy(messageBytes, MESSAGE_LENGTH + HEADER_LENGTH, headerBytes, 0, headerLength);
+        System.arraycopy(messageBytes, TOTAL_FIXED_LENGTH, headerBytes, 0, headerLength);
         String[] headerArray = new String(headerBytes, MESSAGE_CHARSET).split("\n");
         Map<String, String> headers = new HashMap<>();
         for (String header : headerArray) {
@@ -58,21 +62,20 @@ public class MessageUtil {
         }
 
         byte[] bodyBytes = null;
-        if (0 != bodyLength)
+        if (0 != bodyLength) {
             bodyBytes = new byte[bodyLength];
-
-        Message message;
+            System.arraycopy(messageBytes, TOTAL_FIXED_LENGTH + headerLength, bodyBytes, 0, bodyLength);
+        }
+        T message;
         try {
             Class<?> clazz = Message.class.getClassLoader().loadClass(headers.get("class-name"));
-            message = (Message) clazz.newInstance();
-            message.setHeaders(headers);
-            message.setBody(bodyBytes);
+            message = (T) clazz.newInstance();
+            ((Message) message).setHeaders(headers);
+            ((Message) message).setBody(bodyBytes);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
             return null;
         }
-
-
         return message;
     }
 
@@ -96,4 +99,5 @@ public class MessageUtil {
                 (byte) (a & 0xFF)
         };
     }
+
 }

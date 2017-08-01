@@ -9,7 +9,7 @@ import com.cdlibs.cdtp.util.MessageUtil;
 public class Main {
     public static void main(String[] args) {
         TextMessage m = new TextMessage();
-        m.setText("123");
+        m.setText("你好");
         byte[] a=MessageUtil.encode(m);
 
         TextMessage m2= (TextMessage) MessageUtil.decode(a);
