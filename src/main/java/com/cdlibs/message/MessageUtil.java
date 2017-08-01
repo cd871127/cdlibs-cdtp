@@ -1,6 +1,4 @@
-package com.cdlibs.cdtp.util;
-
-import com.cdlibs.cdtp.message.Message;
+package com.cdlibs.message;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;

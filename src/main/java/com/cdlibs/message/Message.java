@@ -1,4 +1,4 @@
-package com.cdlibs.cdtp.message;
+package com.cdlibs.message;
 
 import java.util.HashMap;
 import java.util.Map;

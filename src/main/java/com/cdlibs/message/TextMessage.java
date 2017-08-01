@@ -1,6 +1,4 @@
-package com.cdlibs.cdtp.message;
-
-import com.cdlibs.cdtp.util.MessageUtil;
+package com.cdlibs.message;
 
 /**
  * Created by Anthony on 2017/8/1.
